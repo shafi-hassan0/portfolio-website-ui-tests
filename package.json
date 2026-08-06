@@ -1,0 +1,26 @@
+{
+  "name": "portfolio-website-ui-tests",
+  "version": "1.0.0",
+  "description": "Playwright end-to-end suite for shafihassan.com",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "playwright test",
+    "test:live": "playwright test --grep @live-write",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shafi-hassan0/portfolio-website-ui-tests.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shafi-hassan0/portfolio-website-ui-tests/issues"
+  },
+  "homepage": "https://github.com/shafi-hassan0/portfolio-website-ui-tests#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
