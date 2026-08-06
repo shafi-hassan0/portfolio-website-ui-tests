@@ -9,6 +9,9 @@ on:
     # 09:15 UTC daily — a nightly smoke test against production.
     - cron: "15 9 * * *"
   workflow_dispatch:
+  repository_dispatch:
+    # Fired by portfolio-website-infra's deploy-frontend.yml after every frontend deploy.
+    types: [frontend-changed]
 
 jobs:
   test:
@@ -26,8 +29,45 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Report pending status to portfolio-website-ui
+        if: github.event_name == 'repository_dispatch'
+        run: |
+          curl -sS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.WEBSITE_UI_STATUS_TOKEN }}" \
+            https://api.github.com/repos/shafi-hassan0/portfolio-website-ui/statuses/${{ github.event.client_payload.sha }} \
+            -d "{\"state\":\"pending\",\"context\":\"UI Tests\",\"description\":\"Playwright suite running...\",\"target_url\":\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+
       - name: Run UI tests
-        run: npm test
+        run: npm test | tee test-output.log
+
+      - name: Extract test summary
+        if: always() && github.event_name == 'repository_dispatch'
+        id: summary
+        run: |
+          FAILED=$(grep -oE '^ *[0-9]+ failed$' test-output.log | tail -1 | xargs)
+          PASSED=$(grep -oE '^ *[0-9]+ passed' test-output.log | tail -1 | xargs)
+          SKIPPED=$(grep -oE '^ *[0-9]+ skipped$' test-output.log | tail -1 | xargs)
+          LINE="${PASSED:-0 passed}, ${FAILED:-0 failed}, ${SKIPPED:-0 skipped}"
+          echo "line=$LINE" >> "$GITHUB_OUTPUT"
+
+      - name: Report success to portfolio-website-ui
+        if: success() && github.event_name == 'repository_dispatch'
+        run: |
+          curl -sS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.WEBSITE_UI_STATUS_TOKEN }}" \
+            https://api.github.com/repos/shafi-hassan0/portfolio-website-ui/statuses/${{ github.event.client_payload.sha }} \
+            -d "{\"state\":\"success\",\"context\":\"UI Tests\",\"description\":\"${{ steps.summary.outputs.line }}\",\"target_url\":\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+
+      - name: Report failure to portfolio-website-ui
+        if: failure() && github.event_name == 'repository_dispatch'
+        run: |
+          curl -sS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.WEBSITE_UI_STATUS_TOKEN }}" \
+            https://api.github.com/repos/shafi-hassan0/portfolio-website-ui/statuses/${{ github.event.client_payload.sha }} \
+            -d "{\"state\":\"failure\",\"context\":\"UI Tests\",\"description\":\"${{ steps.summary.outputs.line }}\",\"target_url\":\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
 
       - name: Upload HTML report
         if: always()
