@@ -1,34 +1,24 @@
 import { test, expect } from '@playwright/test';
-
-const NAV_LINKS = [
-  { path: '/experience', label: 'Experience' },
-  { path: '/skills', label: 'Skills' },
-  { path: '/certifications', label: 'Certifications' },
-  { path: '/education', label: 'Education' },
-  { path: '/projects', label: 'Projects' },
-  { path: '/about', label: 'About' },
-  { path: '/now', label: 'Now' },
-  { path: '/playground', label: 'Playground' },
-  { path: '/resume', label: 'Resume' },
-  { path: '/contact', label: 'Contact' },
-];
+import { PAGES } from './pages';
 
 test.describe('primary navigation', () => {
-  for (const link of NAV_LINKS) {
-    test(`navigates to ${link.path} via the nav bar`, async ({ page, isMobile }) => {
-      // Below the lg breakpoint, links sit behind the hamburger toggle rather
-      // than being directly clickable — that flow is covered separately by
-      // "mobile menu toggles and navigates" below.
-      test.skip(isMobile, 'nav links are collapsed behind the mobile menu toggle');
+  test.describe('navigates via the nav bar', () => {
+    for (const item of PAGES) {
+      test(`routes to ${item.path}`, async ({ page, isMobile }) => {
+        // Below the lg breakpoint, links sit behind the hamburger toggle rather
+        // than being directly clickable — that flow is covered separately by
+        // "mobile menu toggles and navigates" below.
+        test.skip(isMobile, 'nav links are collapsed behind the mobile menu toggle');
 
-      // The nav bar is deliberately hidden on the exact home route (app.html's
-      // @if (!isHomeRoute())), since home has its own room-scene navigation
-      // instead — so these tests need to start from any other route.
-      await page.goto('/about');
-      await page.getByRole('link', { name: link.label, exact: true }).first().click();
-      await expect(page).toHaveURL(new RegExp(`${link.path}$`));
-    });
-  }
+        // The nav bar is deliberately hidden on the exact home route (app.html's
+        // @if (!isHomeRoute())), since home has its own room-scene navigation
+        // instead — so these tests need to start from any other route.
+        await page.goto('/about');
+        await page.getByRole('link', { name: item.label, exact: true }).first().click();
+        await expect(page).toHaveURL(new RegExp(`${item.path}$`));
+      });
+    }
+  });
 
   test('logo link returns to the home page', async ({ page }) => {
     await page.goto('/about');
@@ -36,15 +26,19 @@ test.describe('primary navigation', () => {
     await expect(page).toHaveURL('/');
   });
 
-  test('mobile menu toggles and navigates', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'mobile nav toggle only renders below the lg breakpoint');
+  test.describe('mobile menu toggles and navigates', () => {
+    for (const item of PAGES) {
+      test(`routes to ${item.path}`, async ({ page, isMobile }) => {
+        test.skip(!isMobile, 'mobile nav toggle only renders below the lg breakpoint');
 
-    // Same as above — the mobile toggle lives in the nav bar, which is hidden
-    // on the exact home route.
-    await page.goto('/about');
-    await page.getByRole('button', { name: 'Toggle navigation menu' }).click();
-    await page.getByRole('link', { name: 'Contact', exact: true }).click();
-    await expect(page).toHaveURL('/contact');
+        // Same as above — the mobile toggle lives in the nav bar, which is hidden
+        // on the exact home route.
+        await page.goto('/about');
+        await page.getByRole('button', { name: 'Toggle navigation menu' }).click();
+        await page.getByRole('link', { name: item.label, exact: true }).click();
+        await expect(page).toHaveURL(new RegExp(`${item.path}$`));
+      });
+    }
   });
 });
 
