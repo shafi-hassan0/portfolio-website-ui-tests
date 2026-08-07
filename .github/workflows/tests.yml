@@ -16,6 +16,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Ships every browser + OS dependency already installed for this exact
+    # Playwright version, so there's no `apt-get install` of ~180 packages on
+    # every run — that step alone was taking 10+ minutes on a plain runner.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
     steps:
       - name: Report pending status to portfolio-website-ui
         if: github.event_name == 'repository_dispatch'
@@ -34,9 +39,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
 
       - name: Run UI tests
         run: npm test | tee test-output.log
