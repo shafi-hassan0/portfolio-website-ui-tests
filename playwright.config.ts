@@ -12,9 +12,10 @@ export default defineConfig({
   workers: process.env['CI'] ? 1 : undefined,
   reporter: 'html',
 
-  // @live-write tests (e.g. a real contact-form submission) send real emails and
-  // must be run deliberately via `npm run test:live`, never as part of the default suite.
-  grepInvert: /@live-write/,
+  // @live-write exclusion lives in the "test" npm script (--grep-invert), not
+  // here — Playwright ANDs config-level grep/grepInvert with CLI grep, so a
+  // grepInvert baked in here would silently cancel out `--grep @live-write`
+  // and "npm run test:live" would always find zero tests.
 
   use: {
     baseURL,
