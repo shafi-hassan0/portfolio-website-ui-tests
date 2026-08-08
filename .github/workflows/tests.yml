@@ -57,10 +57,16 @@ jobs:
       - name: Extract test summary
         if: always() && github.event_name == 'repository_dispatch'
         id: summary
+        # `|| true` on each grep: with pipefail active (this job's shell is
+        # `bash`, whose GitHub-provided default template is `-e -o pipefail`),
+        # a legitimate zero-match case — e.g. no "X failed" line at all when
+        # nothing failed — would otherwise make grep's exit 1 propagate and
+        # kill the step via -e, before the ${VAR:-default} fallback below
+        # ever runs.
         run: |
-          FAILED=$(grep -oE '^ *[0-9]+ failed$' test-output.log | tail -1 | xargs)
-          PASSED=$(grep -oE '^ *[0-9]+ passed' test-output.log | tail -1 | xargs)
-          SKIPPED=$(grep -oE '^ *[0-9]+ skipped$' test-output.log | tail -1 | xargs)
+          FAILED=$(grep -oE '^ *[0-9]+ failed$' test-output.log | tail -1 | xargs || true)
+          PASSED=$(grep -oE '^ *[0-9]+ passed' test-output.log | tail -1 | xargs || true)
+          SKIPPED=$(grep -oE '^ *[0-9]+ skipped$' test-output.log | tail -1 | xargs || true)
           LINE="${PASSED:-0 passed}, ${FAILED:-0 failed}, ${SKIPPED:-0 skipped}"
           echo "line=$LINE" >> "$GITHUB_OUTPUT"
 
