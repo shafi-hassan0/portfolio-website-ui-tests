@@ -21,6 +21,12 @@ jobs:
     # every run — that step alone was taking 10+ minutes on a plain runner.
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
+    # The container's default `run:` shell is sh (dash), not bash — dash's
+    # `set` doesn't support `-o pipefail` ("Illegal option"). Force bash for
+    # every step so pipefail (and any other bash-ism) works as expected.
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Report pending status to portfolio-website-ui
         if: github.event_name == 'repository_dispatch'
