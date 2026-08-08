@@ -30,7 +30,13 @@ test.describe('home page', () => {
         test.skip(!isMobile, 'the icon grid is mobile-only (md:hidden)');
 
         await page.goto('/');
-        await page.getByRole('link', { name: item.label, exact: true }).click();
+        // href-based, not label-based: the home page's own item labels (e.g.
+        // "About Me") deliberately differ from the shared PAGES labels used
+        // elsewhere (e.g. the persistent nav bar's "About"). href matches both
+        // the (CSS-hidden but still-present) desktop furniture link and the
+        // mobile grid link, so .last() picks the mobile one — mirroring the
+        // desktop test's .first() above.
+        await page.locator(`a[href="${item.path}"]`).last().click();
         await expect(page).toHaveURL(item.path);
       });
     }
