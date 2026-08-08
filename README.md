@@ -6,7 +6,7 @@ A Playwright end-to-end suite covering every page of [shafihassan.com](https://s
 
 - Every page checked, including the skills/experience detail dialogs, image sliders, resume PDF download, contact form validation, and all six Playground mini-games
 - Content is cross-checked live against the [REST API](https://github.com/shafi-hassan0/portfolio-website-api) rather than hardcoded — catches real rendering bugs without becoming brittle to legitimate content updates
-- Runs across desktop Chrome, WebKit, and mobile Chrome — 200+ test runs per suite execution
+- Runs across desktop Chrome and mobile Chrome — 150+ test runs per suite execution
 - Runs automatically on every push to the UI repo, nightly against production, and on every pull request — with results reported back to the UI repo as a commit status
 - Part of a fully automated cross-repo pipeline: a frontend deploy dispatches this suite and waits for the real pass/fail before the deploy is considered successful
 

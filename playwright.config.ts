@@ -22,9 +22,11 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
+  // WebKit dropped — Chromium coverage (desktop + mobile) catches the vast
+  // majority of real issues, and running a third full browser engine on a
+  // single CI worker was a big chunk of the suite's runtime.
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
     { name: 'mobile-chrome', use: { ...devices['Pixel 7'] } },
   ],
 });
